@@ -1,0 +1,27 @@
+name: New check idea
+description: Suggest something Preflight should catch before launch
+labels: ["new check"]
+body:
+  - type: input
+    id: id
+    attributes:
+      label: Check id
+      description: kebab-case, e.g. firebase-rules-open
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What should it flag, and why does it matter?
+    validations:
+      required: true
+  - type: textarea
+    id: bad
+    attributes:
+      label: Example that should be flagged
+      render: text
+  - type: textarea
+    id: good
+    attributes:
+      label: Similar example that should NOT be flagged
+      render: text

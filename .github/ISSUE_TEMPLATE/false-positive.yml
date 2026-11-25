@@ -1,0 +1,22 @@
+name: False positive
+description: Preflight flagged something that is fine
+labels: ["false positive"]
+body:
+  - type: input
+    id: check
+    attributes:
+      label: Check id
+      description: Shown on the card, e.g. secret-in-client
+    validations:
+      required: true
+  - type: textarea
+    id: snippet
+    attributes:
+      label: Smallest snippet or file layout that triggers it
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it is fine
