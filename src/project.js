@@ -1,11 +1,14 @@
 import { readdir, stat } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { existsSync } from 'node:fs';
+import { isGitignored } from './rules/_gitignore.js';
 
 /** Directories that are never scanned: dependencies, VCS data and build output. */
 export const SKIP_DIRS = new Set([
   'node_modules', '.git', 'dist', 'build', '.next', 'out', 'coverage', '.vercel',
-  '.svelte-kit', '.nuxt', '.turbo', '.cache', '.expo', 'Pods', 'DerivedData', '.superpowers',
+  '.svelte-kit', '.nuxt', '.turbo', '.cache', '.expo', 'Pods', 'DerivedData', '.output', '.parcel-cache',
+  '.venv', 'venv', '__pycache__', 'vendor', 'target', '.gradle', '.dart_tool', '.terraform', 'bower_components', '.yarn',
 ]);
 
 /** Files larger than this are skipped (bundles, dumps, generated code). */
@@ -66,8 +69,40 @@ export async function loadProject(root) {
   const gitignore = files.includes('.gitignore')
     ? read('.gitignore').split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#'))
     : [];
+  // .gitignore files that apply: parents up to the repo root (outermost first), then nested ones.
+  const sources = [];
+  const parents = [];
+  for (let dir = path.dirname(path.resolve(root)); ; dir = path.dirname(dir)) {
+    if (existsSync(path.join(dir, '.gitignore'))) parents.unshift(dir);
+    if (existsSync(path.join(dir, '.git')) || path.dirname(dir) === dir) break;
+  }
+  if (existsSync(path.join(root, '.git'))) parents.length = 0;
+  const parse = (text) => text.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#'));
+  for (const dir of parents) {
+    let text = '';
+    try { text = readFileSync(path.join(dir, '.gitignore'), 'utf8'); } catch { text = ''; }
+    sources.push({ base: path.relative(dir, path.resolve(root)).split(path.sep).join('/'), patterns: parse(text) });
+  }
+  for (const f of files.filter((f) => f === '.gitignore' || f.endsWith('/.gitignore'))) {
+    const dir = f.includes('/') ? f.slice(0, f.lastIndexOf('/')) : '';
+    sources.push({ prefix: dir, patterns: parse(read(f)) });
+  }
+  const isIgnored = (file) => {
+    let ignored = false;
+    for (const src of sources) {
+      let rel;
+      if ('base' in src) rel = src.base ? `${src.base}/${file}` : file;
+      else if (!src.prefix) rel = file;
+      else if (file.startsWith(src.prefix + '/')) rel = file.slice(src.prefix.length + 1);
+      else continue;
+      const verdict = isGitignored(rel, src.patterns, null);
+      if (verdict !== null) ignored = verdict;
+    }
+    return ignored;
+  };
   return {
     root,
+    isIgnored,
     files,
     read,
     lines: (file) => read(file).split(/\r?\n/),

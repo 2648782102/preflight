@@ -12,6 +12,7 @@ export const PLACEHOLDERS = {
   __ANTHROPIC_KEY__: ['sk', 'ant', 'api03'].join('-') + '-FAKEdemoKEY' + '0'.repeat(20),
   __OPENAI_KEY__: ['sk', 'proj'].join('-') + '-FAKEdemoKEY' + '0'.repeat(20),
   __AWS_KEY__: 'AKIA' + 'FAKEDEMO00000000',
+  __ANON_JWT__: 'eyJ' + 'hbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYW5vbiJ9.FAKEsignature',
   __SERVICE_ROLE_JWT__: 'eyJ' + 'hbGciOiJIUzI1NiJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.FAKEsignature',
 };
 

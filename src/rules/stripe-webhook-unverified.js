@@ -1,5 +1,7 @@
 const CODE = /\.(?:js|jsx|mjs|cjs|ts|tsx|py|rb|go|php)$/;
-const STRIPE_EVENT = /checkout\.session\.completed|invoice\.(?:paid|payment_succeeded)|customer\.subscription\.|payment_intent\.succeeded|stripe-signature/i;
+const STRIPE_EVENT = /checkout\.session\.completed|invoice\.(?:paid|payment_succeeded)|customer\.subscription\.|payment_intent\.succeeded/;
+const HANDLER = /export\s+(?:async\s+)?(?:function\s+POST|const\s+POST)|\b(?:app|router|server)\.post\(|@app\.(?:post|route)\(|stripe-signature|def\s+\w*webhook/i;
+const VERIFIED = /construct_?event/i;
 
 export default {
   id: 'stripe-webhook-unverified',
@@ -7,12 +9,13 @@ export default {
   category: 'security',
   severity: 'critical',
   check(project) {
-    return project.files
-      .filter((f) => CODE.test(f))
+    const code = project.files.filter((f) => CODE.test(f));
+    // A project that verifies anywhere (often in a shared helper) is treated as verified.
+    if (code.some((f) => VERIFIED.test(project.read(f)))) return [];
+    return code
       .filter((f) => {
         const text = project.read(f);
-        const isWebhook = (/webhook/i.test(f) && /stripe/i.test(f + text)) || STRIPE_EVENT.test(text);
-        return isWebhook && !/construct_?event/i.test(text);
+        return HANDLER.test(text) && STRIPE_EVENT.test(text);
       })
       .map((file) => ({
         file,

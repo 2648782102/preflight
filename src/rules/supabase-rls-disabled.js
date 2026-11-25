@@ -8,6 +8,9 @@ export default {
   category: 'security',
   severity: 'critical',
   check(project) {
+    // Row-level security only protects data exposed through Supabase's public API.
+    const usesSupabase = project.has(/(?:^|\/)supabase\//) || /"@supabase\//.test(project.read('package.json'));
+    if (!usesSupabase) return [];
     const sqlFiles = project.files.filter((f) => f.endsWith('.sql'));
     if (!sqlFiles.length) return [];
     const enabled = new Set();

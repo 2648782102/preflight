@@ -1,0 +1,1 @@
+const SUPABASE_ANON_KEY = '__ANON_JWT__';
