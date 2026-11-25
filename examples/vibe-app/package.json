@@ -1,0 +1,6 @@
+{
+  "name": "vibe-app",
+  "private": true,
+  "description": "A deliberately broken demo app for Preflight. Every secret here is fake.",
+  "dependencies": { "next": "^16.0.0", "react": "^19.0.0", "@supabase/supabase-js": "^2.50.0", "stripe": "^19.0.0", "cors": "^2.8.5" }
+}

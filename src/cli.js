@@ -4,6 +4,7 @@ import path from 'node:path';
 import { run } from './run.js';
 import { renderTerminal } from './report/terminal.js';
 import { renderHtml } from './report/html.js';
+import { buildDemo } from './demo.js';
 
 const LEVELS = { critical: ['critical'], warning: ['critical', 'warning'], never: [] };
 
@@ -15,6 +16,7 @@ Usage
 Options
   --html [file]        also write a shareable report card (default: preflight-report.html)
   --json               print the report as JSON instead of the card
+  --demo               scan a deliberately broken demo app (fake secrets) to see Preflight in action
   --ignore <ids>       comma-separated check ids to skip
   --fail-on <level>    critical (default) | warning | never; sets the exit code for CI
   -v, --version        print the version
@@ -50,6 +52,7 @@ export async function main(argv, io) {
       options: {
         html: { type: 'string' },
         json: { type: 'boolean' },
+        demo: { type: 'boolean' },
         ignore: { type: 'string' },
         'fail-on': { type: 'string', default: 'critical' },
         version: { type: 'boolean', short: 'v' },
@@ -67,7 +70,7 @@ export async function main(argv, io) {
     io.stderr.write(`--fail-on must be critical, warning or never (got "${values['fail-on']}").\n`);
     return 2;
   }
-  const root = path.resolve(io.cwd, positionals[0] ?? '.');
+  const root = values.demo ? buildDemo() : path.resolve(io.cwd, positionals[0] ?? '.');
   if (!existsSync(root) || !statSync(root).isDirectory()) {
     io.stderr.write(`Folder not found: ${root}\n`);
     return 2;
@@ -75,6 +78,7 @@ export async function main(argv, io) {
 
   const report = await run(root, { ignore: values.ignore ? values.ignore.split(',').map((s) => s.trim()).filter(Boolean) : [] });
 
+  if (values.demo && !values.json) io.stdout.write('Scanning the Preflight demo app (deliberately broken, every secret is fake)...\n\n');
   if (values.json) io.stdout.write(JSON.stringify(report, null, 2) + '\n');
   else io.stdout.write(renderTerminal(report));
 

@@ -2,6 +2,9 @@ import { CATEGORIES } from '../score.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
+/** Escapes text, then turns `code` spans into inline code. */
+const rich = (s) => esc(s).replace(/`([^`]+)`/g, '<code class="inline">$1</code>');
+
 const GRADE_COLOR = { A: '#34d399', B: '#a3e635', C: '#fbbf24', D: '#fb923c', F: '#f87171' };
 const SEVERITY_COLOR = { critical: '#f87171', warning: '#fbbf24', info: '#94a3b8' };
 const SEVERITY_ORDER = { critical: 0, warning: 1, info: 2 };
@@ -22,7 +25,7 @@ function gauge(score, color) {
   <circle cx="90" cy="90" r="${r}" fill="none" stroke="#1f2430" stroke-width="14"/>
   <circle cx="90" cy="90" r="${r}" fill="none" stroke="${color}" stroke-width="14" stroke-linecap="round"
     stroke-dasharray="${circumference.toFixed(2)}" stroke-dashoffset="${offset.toFixed(2)}" transform="rotate(-90 90 90)"/>
-  <text x="90" y="92" text-anchor="middle" class="gauge-score">${score}</text>
+  <text x="90" y="92" text-anchor="middle" class="gauge-score" fill="${color}" style="fill:${color}">${score}</text>
   <text x="90" y="118" text-anchor="middle" class="gauge-out">/ 100</text>
 </svg>`;
 }
@@ -45,8 +48,8 @@ function findingCards(report) {
     return `<h2>${CATEGORY_LABEL[c]}</h2>\n` + items.map((r) => `<article class="finding" style="--sev:${SEVERITY_COLOR[r.severity]}">
   <div class="finding-head"><span class="pill">${esc(r.severity)}</span><h3>${esc(r.title)}</h3></div>
   ${r.file ? `<code>${esc(r.line ? `${r.file}:${r.line}` : r.file)}</code>` : ''}
-  <p>${esc(r.message)}</p>
-  <p class="fix"><span>Fix</span>${esc(r.fix)}</p>
+  <p>${rich(r.message)}</p>
+  <p class="fix"><span>Fix</span>${rich(r.fix)}</p>
 </article>`).join('\n');
   }).join('\n');
 }
@@ -94,6 +97,7 @@ export function renderHtml(report) {
   code { display: inline-block; margin-top: 8px; font: 12.5px ui-monospace, SFMono-Regular, Menlo, monospace; color: #7dd3fc; background: #0b0e15; border: 1px solid #1e2433; border-radius: 8px; padding: 2px 8px; }
   .finding p { margin: 8px 0 0; color: #cbd5e1; }
   .fix { color: #d1fae5 !important; }
+  code.inline { display: inline; margin: 0; padding: 1px 6px; font-size: 12.5px; color: #e2e8f0; }
   .fix span { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #34d399; margin-right: 8px; }
   .clean { margin-top: 28px; padding: 22px; text-align: center; border: 1px dashed #2f3b2f; border-radius: 14px; color: #a7f3d0; font-weight: 600; }
   footer { margin-top: 28px; text-align: center; color: #64748b; font-size: 12.5px; }

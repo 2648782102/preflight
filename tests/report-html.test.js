@@ -34,3 +34,9 @@ test('html shows score, grade and file:line', () => {
   assert.match(html, /Grade D/);
   assert.match(html, /a\.js:3/);
 });
+
+test('html renders `backticks` in messages and fixes as inline code, still escaped', () => {
+  const html = renderHtml({ ...report, results: [{ ...report.results[0], fix: 'Run `git rm --cached .env` and <b>' }] });
+  assert.match(html, /<code class="inline">git rm --cached \.env<\/code>/);
+  assert.match(html, /&lt;b&gt;/);
+});
