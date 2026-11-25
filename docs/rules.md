@@ -26,4 +26,8 @@ Add a comment on the line, or the line above:
 app.use(cors());
 ```
 
-Or skip a whole check: `npx vibe-preflight --ignore cors-wildcard,no-error-monitoring`.
+This works for findings that point at a line. Findings about a whole file or project (`env-file-committed`, `stripe-webhook-unverified`, `no-error-monitoring`, `no-privacy-policy`, `missing-meta-tags`) are skipped with `--ignore` instead:
+
+```bash
+npx vibe-preflight --ignore no-error-monitoring,no-privacy-policy
+```
