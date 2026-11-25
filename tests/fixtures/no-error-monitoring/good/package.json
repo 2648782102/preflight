@@ -1,0 +1,1 @@
+{ "dependencies": { "react": "^19.0.0", "@sentry/nextjs": "^9.0.0" } }
