@@ -6,6 +6,7 @@ import monitoring from '../../src/rules/no-error-monitoring.js';
 import privacy from '../../src/rules/no-privacy-policy.js';
 import meta from '../../src/rules/missing-meta-tags.js';
 import favicon from '../../src/rules/missing-favicon.js';
+import robots from '../../src/rules/missing-robots-txt.js';
 
 test('cors-wildcard flags cors() with no options and a * header', async () => {
   const f = cors.check(await fixtureProject('cors-wildcard', 'bad'));
@@ -67,4 +68,18 @@ test('missing-favicon is quiet with public/favicon.ico, a <link rel="icon"> or N
   assert.deepEqual(favicon.check(await fixtureProject('missing-favicon', 'good')), []);
   assert.deepEqual(favicon.check(await fixtureProject('missing-favicon', 'good-vite')), []);
   assert.deepEqual(favicon.check(await fixtureProject('missing-favicon', 'good-next')), []);
+});
+
+test('missing-robots-txt flags a Vite app with no public/robots.txt', async () => {
+  const f = robots.check(await fixtureProject('missing-robots-txt', 'bad'));
+  assert.equal(f.length, 1);
+  assert.equal(f[0].file, 'index.html');
+  assert.equal(robots.category, 'launch');
+  assert.equal(robots.severity, 'info');
+});
+
+test('missing-robots-txt is quiet with public/robots.txt, Next.js app/robots.ts, or no website', async () => {
+  assert.deepEqual(robots.check(await fixtureProject('missing-robots-txt', 'good')), []);
+  assert.deepEqual(robots.check(await fixtureProject('missing-robots-txt', 'good-next')), []);
+  assert.deepEqual(robots.check(await fixtureProject('missing-robots-txt', 'good-backend')), []);
 });
