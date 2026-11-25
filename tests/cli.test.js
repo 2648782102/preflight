@@ -1,0 +1,71 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtempSync, existsSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { main } from '../src/cli.js';
+import { fixtureDir } from './helpers.js';
+
+function io(cwd) {
+  const out = { stdout: '', stderr: '' };
+  return { out, io: { cwd, stdout: { write: (s) => { out.stdout += s; } }, stderr: { write: (s) => { out.stderr += s; } } } };
+}
+const empty = () => mkdtempSync(path.join(tmpdir(), 'preflight-empty-'));
+
+test('cli --json prints parseable report', async () => {
+  const { out, io: x } = io(empty());
+  const code = await main(['--json'], x);
+  assert.equal(typeof JSON.parse(out.stdout).score, 'number');
+  assert.equal(code, 0);
+});
+
+test('cli exits 1 on critical by default, 0 with --fail-on never', async () => {
+  const dir = fixtureDir('secret-in-client', 'bad');
+  assert.equal(await main([dir], io(dir).io), 1);
+  assert.equal(await main([dir, '--fail-on', 'never'], io(dir).io), 0);
+});
+
+test('cli --fail-on warning exits 1 on a warning', async () => {
+  const dir = fixtureDir('cors-wildcard', 'bad');
+  assert.equal(await main([dir], io(dir).io), 0);
+  assert.equal(await main([dir, '--fail-on', 'warning'], io(dir).io), 1);
+});
+
+test('cli on an empty folder prints a clean card and exits 0', async () => {
+  const { out, io: x } = io(empty());
+  assert.equal(await main([], x), 0);
+  assert.match(out.stdout, /No issues found/);
+  assert.match(out.stdout, /100 \/ 100/);
+});
+
+test('cli exits 2 for a missing path or a bad flag', async () => {
+  const a = io(empty());
+  assert.equal(await main(['/definitely/not/here'], a.io), 2);
+  assert.match(a.out.stderr, /not found/i);
+  assert.equal(await main(['--nope'], io(empty()).io), 2);
+  assert.equal(await main(['--fail-on', 'sometimes'], io(empty()).io), 2);
+});
+
+test('cli --html writes the file', async () => {
+  const dir = empty();
+  const { out, io: x } = io(dir);
+  assert.equal(await main(['--html'], x), 0);
+  const file = path.join(dir, 'preflight-report.html');
+  assert.ok(existsSync(file));
+  assert.ok(readFileSync(file, 'utf8').toLowerCase().startsWith('<!doctype html>'));
+  assert.match(out.stdout, /preflight-report\.html/);
+});
+
+test('cli --ignore drops a rule', async () => {
+  const dir = fixtureDir('secret-in-client', 'bad');
+  assert.equal(await main([dir, '--ignore', 'secret-in-client'], io(dir).io), 0);
+});
+
+test('cli --version and --help', async () => {
+  const v = io(empty());
+  assert.equal(await main(['--version'], v.io), 0);
+  assert.match(v.out.stdout, /^\d+\.\d+\.\d+/);
+  const h = io(empty());
+  assert.equal(await main(['--help'], h.io), 0);
+  assert.match(h.out.stdout, /--fail-on/);
+});
