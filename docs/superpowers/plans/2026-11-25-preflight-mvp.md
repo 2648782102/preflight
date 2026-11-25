@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - `package.json`: `"name": "vibe-preflight"`, `"type": "module"`, `"engines": { "node": ">=20" }`, `"bin": { "vibe-preflight": "bin/preflight.js", "preflight": "bin/preflight.js" }`, `"license": "MIT"`, **no `dependencies`**.
-- Test command: `node --test` (every test file is `test/**/*.test.js`).
+- Test command: `node --test` (every test file is `tests/**/*.test.js`).
 - Severity weights: critical 15, warning 5, info 1. Score = clamp(100 − Σ weights, 0, 100). Grades: A ≥ 90, B ≥ 80, C ≥ 70, D ≥ 50, F < 50.
 - Categories exactly: `security`, `reliability`, `launch`.
 - Never read: `node_modules`, `.git`, `dist`, `build`, `.next`, `out`, `coverage`, `.vercel`, files > 1 MB, or binary extensions (images, fonts, archives, media).

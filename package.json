@@ -1,0 +1,24 @@
+{
+  "name": "vibe-preflight",
+  "version": "0.1.0",
+  "description": "Is your vibe-coded app ready to launch? One command checks for leaked keys, open databases and missing launch basics, then gives you a report card.",
+  "type": "module",
+  "bin": {
+    "vibe-preflight": "bin/preflight.js",
+    "preflight": "bin/preflight.js"
+  },
+  "files": ["bin", "src", ".claude-plugin", "commands"],
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": ["vibe-coding", "launch", "checklist", "security", "supabase", "stripe", "cli", "claude-code"],
+  "author": "erdellll",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erdellll/preflight.git"
+  }
+}
