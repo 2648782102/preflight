@@ -1,0 +1,9 @@
+{
+  "name": "preflight",
+  "description": "Check whether your vibe-coded app is ready to launch: leaked keys, open databases, unverified payments and missing launch basics, with a fix for every finding.",
+  "version": "0.1.0",
+  "author": { "name": "erdellll" },
+  "homepage": "https://github.com/erdellll/preflight",
+  "license": "MIT",
+  "keywords": ["launch", "security", "checklist", "vibe-coding"]
+}

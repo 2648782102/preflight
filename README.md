@@ -63,6 +63,19 @@ Silence a single finding with `// preflight-ignore <check-id>` on the line or th
 
 The command exits with code 1 when a finding reaches the `--fail-on` level, so a leaked key blocks the merge.
 
+## Use it inside Claude Code
+
+Preflight ships as a Claude Code plugin with a `/preflight` command that runs the scan, explains the results and offers to fix critical issues one at a time, asking before every change.
+
+In Claude Code, run:
+
+```text
+/plugin marketplace add erdellll/preflight
+/plugin install preflight@preflight
+```
+
+Then type `/preflight` in any project.
+
 ## Add a check in 10 minutes
 
 Every check is one small file plus two example folders, one it must flag and one it must leave alone. No build step, no dependencies. Read [CONTRIBUTING.md](CONTRIBUTING.md), or pick an issue labelled [`good first issue`](https://github.com/erdellll/preflight/issues?q=is%3Aopen+label%3A%22good+first+issue%22).

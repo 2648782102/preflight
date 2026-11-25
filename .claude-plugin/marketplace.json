@@ -1,0 +1,11 @@
+{
+  "name": "preflight",
+  "owner": { "name": "erdellll" },
+  "plugins": [
+    {
+      "name": "preflight",
+      "source": "./",
+      "description": "Check whether your vibe-coded app is ready to launch, with a fix for every finding."
+    }
+  ]
+}
