@@ -117,3 +117,28 @@ test('no-privacy-policy still recognises an email input inside a long tag', () =
   assert.equal(findings.length, 1);
   assert.equal(findings[0].file, 'app/page.tsx');
 });
+
+// Supabase's own edge-function template sets Access-Control-Allow-Origin: '*', so every function
+// in supabase/functions/ was flagged with advice that does not fit that template (#22).
+test('cors-wildcard names corsHeaders for a Supabase edge function, and keeps the finding', () => {
+  const supabase = {
+    has: () => false,
+    files: ['supabase/functions/hello/index.ts'],
+    lines: () => ["export const corsHeaders = { 'Access-Control-Allow-Origin': '*', };"],
+    read: () => '',
+  };
+  const found = cors.check(supabase);
+  assert.equal(found.length, 1, 'the finding stays');
+  assert.match(found[0].fix, /corsHeaders/);
+  assert.match(found[0].fix, /origin/i);
+
+  const elsewhere = {
+    has: () => false,
+    files: ['src/server.ts'],
+    lines: () => ["app.use(cors({ origin: '*' }));"],
+    read: () => '',
+  };
+  const generic = cors.check(elsewhere);
+  assert.equal(generic.length, 1);
+  assert.doesNotMatch(generic[0].fix, /corsHeaders/, 'the generic advice stays generic');
+});

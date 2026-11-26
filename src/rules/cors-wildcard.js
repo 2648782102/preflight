@@ -6,6 +6,9 @@ const PATTERNS = [
   /allow_origins\s*=\s*\[\s*['"]\*['"]\s*\]/,
 ];
 
+/** Supabase ships this template with every edge function, so its fix has to name the file's own object. */
+const SUPABASE_FUNCTION = /(?:^|\/)supabase\/functions\//;
+
 export default {
   id: 'cors-wildcard',
   title: 'CORS allows every website',
@@ -20,7 +23,11 @@ export default {
             file,
             line: i + 1,
             message: 'CORS is open to every origin, so any website can call this API from a visitor\'s browser.',
-            fix: "List the origins you trust, for example `cors({ origin: ['https://yourapp.com'] })`.",
+            fix: SUPABASE_FUNCTION.test(file)
+              // Naming the object the template already has is easier to act on than generic middleware
+              // advice, and the finding itself is just as real (#22).
+              ? "Replace `'*'` in the function's `corsHeaders` with your app's origin, for example `'Access-Control-Allow-Origin': 'https://yourapp.com'`."
+              : "List the origins you trust, for example `cors({ origin: ['https://yourapp.com'] })`.",
           });
         }
       });
