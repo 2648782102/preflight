@@ -30,3 +30,17 @@ test('docs/rules.md lists every rule id', async () => {
   const doc = readFileSync(new URL('../docs/rules.md', import.meta.url), 'utf8');
   for (const r of await loadRules()) assert.ok(doc.includes(`\`${r.id}\``), r.id);
 });
+
+// The count in the README is the number a visitor reads before anything else, and adding a check
+// does not touch that file (#76).
+test("README's check count matches the number of rules", async () => {
+  const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8');
+  const stated = readme.match(/(\d+) checks today/);
+  assert.ok(stated, 'README.md no longer says "<n> checks today"');
+  const rules = await loadRules();
+  assert.equal(
+    Number(stated[1]),
+    rules.length,
+    `README says ${stated[1]} checks but there are ${rules.length}: update the count in README.md`,
+  );
+});
