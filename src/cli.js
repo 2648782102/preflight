@@ -1,5 +1,5 @@
 import { parseArgs } from 'node:util';
-import { existsSync, statSync, writeFileSync, readFileSync } from 'node:fs';
+import { existsSync, statSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { run } from './run.js';
 import { renderTerminal } from './report/terminal.js';
@@ -78,7 +78,7 @@ export async function main(argv, io) {
     for (let i = 0; i < argv.length; i++) {
       if (argv[i] === '--html') {
         const next = argv[i + 1];
-        norm.push('--html', next && !next.startsWith('-') && next.endsWith('.html') ? argv[++i] : 'preflight-report.html');
+        norm.push('--html', next && !next.startsWith('-') && /\.html?$/i.test(next) ? argv[++i] : 'preflight-report.html');
       } else norm.push(argv[i]);
     }
     args = parseArgs({
@@ -126,16 +126,32 @@ export async function main(argv, io) {
     }
   }
 
-  if (values.demo && !values.json) io.stdout.write('Scanning the Preflight demo app (deliberately broken, every secret is fake)...\n\n');
-  if (values.json) io.stdout.write(JSON.stringify(report, null, 2) + '\n');
-  else io.stdout.write(renderTerminal(report));
+  // A --demo run copied the sample app into a temp folder; it is this run's to remove, and a throw
+  // in rendering or --html must not leave it behind (#25).
+  try {
+    // Checked before anything is printed: a report card that cannot be written is a usage error, and
+    // printing the whole report first then crashing with ENOENT buries the reason (#17).
+    if (values.html) {
+      const file = path.resolve(io.cwd, values.html);
+      if (!existsSync(path.dirname(file))) {
+        io.stderr.write(`Can't write ${values.html}: folder does not exist (${path.dirname(file)})\n`);
+        return 2;
+      }
+    }
 
-  if (values.html) {
-    const file = path.resolve(io.cwd, values.html);
-    writeFileSync(file, renderHtml(report));
-    if (!values.json) io.stdout.write(`Report card written to ${path.relative(io.cwd, file) || file}\n`);
+    if (values.demo && !values.json) io.stdout.write('Scanning the Preflight demo app (deliberately broken, every secret is fake)...\n\n');
+    if (values.json) io.stdout.write(JSON.stringify(report, null, 2) + '\n');
+    else io.stdout.write(renderTerminal(report));
+
+    if (values.html) {
+      const file = path.resolve(io.cwd, values.html);
+      writeFileSync(file, renderHtml(report));
+      if (!values.json) io.stdout.write(`Report card written to ${path.relative(io.cwd, file) || file}\n`);
+    }
+
+    const failing = LEVELS[values['fail-on']];
+    return report.results.some((r) => failing.includes(r.severity)) ? 1 : 0;
+  } finally {
+    if (values.demo) rmSync(root, { recursive: true, force: true });
   }
-
-  const failing = LEVELS[values['fail-on']];
-  return report.results.some((r) => failing.includes(r.severity)) ? 1 : 0;
 }
