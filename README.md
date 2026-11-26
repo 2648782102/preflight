@@ -39,7 +39,7 @@ Scans a deliberately broken demo app (every secret is fake) so you can see what 
 
 ## What it checks
 
-15 checks today, across security, reliability and launch basics. See [all checks](docs/rules.md).
+16 checks today, across security, reliability and launch basics. See [all checks](docs/rules.md).
 
 | | |
 |---|---|
@@ -47,6 +47,7 @@ Scans a deliberately broken demo app (every secret is fake) so you can see what 
 | 📄 `.env` files that can be committed | 💳 Stripe webhooks without signature checks |
 | 🌍 CORS open to every website | 🚨 No error monitoring |
 | 🔒 No privacy policy | 🔗 Missing title, description or share image |
+| 🔍 SQL built by joining strings | 🧩 No custom 404 page |
 
 ## Options
 
