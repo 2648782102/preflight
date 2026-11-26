@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, existsSync, readFileSync, readdirSync } from 'node:fs';
+import { mkdtempSync, existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { main } from '../src/cli.js';
@@ -99,4 +99,19 @@ test('cli --version and --help', async () => {
   const h = io(empty());
   assert.equal(await main(['--help'], h.io), 0);
   assert.match(h.out.stdout, /--fail-on/);
+});
+
+// `--html report.htm` was read as the folder to scan, so the run failed with "Folder not found"
+// pointing at a file name (#18). The normaliser only recognised `.html`.
+test('cli --html accepts a name ending in .htm as well as .html', async () => {
+  const dir = fixtureDir('secret-in-client', 'bad');
+  for (const name of ['report.htm', 'report.html']) {
+    const { out, io: x } = io(dir);
+    await main([dir, '--json', '--html', name], x);
+    const written = path.join(dir, name);
+    assert.ok(existsSync(written), `--html ${name} wrote nothing`);
+    assert.match(readFileSync(written, 'utf8').toLowerCase(), /^<!doctype html/);
+    assert.doesNotMatch(out.stderr, /Folder not found/);
+    rmSync(written, { force: true });
+  }
 });

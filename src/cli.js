@@ -78,7 +78,7 @@ export async function main(argv, io) {
     for (let i = 0; i < argv.length; i++) {
       if (argv[i] === '--html') {
         const next = argv[i + 1];
-        norm.push('--html', next && !next.startsWith('-') && next.endsWith('.html') ? argv[++i] : 'preflight-report.html');
+        norm.push('--html', next && !next.startsWith('-') && /\.html?$/i.test(next) ? argv[++i] : 'preflight-report.html');
       } else norm.push(argv[i]);
     }
     args = parseArgs({
