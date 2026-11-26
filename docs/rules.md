@@ -28,7 +28,7 @@ Add a comment on the line, or the line above:
 app.use(cors());
 ```
 
-This works for findings that point at a line. Findings about a whole file or project (`env-file-committed`, `stripe-webhook-unverified`, `no-error-monitoring`, `no-privacy-policy`, `missing-meta-tags`, `missing-favicon`, `missing-robots-txt`) are skipped with `--ignore` instead:
+A finding about a whole file (`env-file-committed`, `stripe-webhook-unverified`, `no-error-monitoring`, `no-privacy-policy`, `missing-meta-tags`) takes the same comment in that file's first five lines. Anything without a file of its own, and anything you want gone project-wide, uses `--ignore`:
 
 ```bash
 npx vibe-preflight --ignore no-error-monitoring,no-privacy-policy

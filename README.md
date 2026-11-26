@@ -58,7 +58,7 @@ npx vibe-preflight --fail-on warning   # exit code policy: critical (default) | 
 ```
 Set NO_COLOR=1 to turn off coloured output.
 
-Silence a finding that points at a line with `// preflight-ignore <check-id>` on that line or the line above. For findings about a whole file or project (for example a missing privacy page), skip the check with `--ignore <check-id>`.
+Silence a finding that points at a line with `// preflight-ignore <check-id>` on that line or the line above. A finding about a whole file (a committed `.env`, an unverified webhook) takes the same comment in the file's first five lines. Anything you want gone project-wide, including findings with no file at all, uses `--ignore <check-id>`.
 
 ## Use it in CI
 
