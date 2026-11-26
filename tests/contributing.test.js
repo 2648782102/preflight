@@ -9,6 +9,23 @@ import { fixtureProject } from './helpers.js';
 
 const root = (p) => fileURLToPath(new URL(`../${p}`, import.meta.url));
 
+// `src/rules/<id>.js` is how a rule is found, named in ignore comments and listed in docs/rules.md,
+// so a file whose default export says another id points every one of those at the wrong name (#75).
+test('every rule file is named after the id it exports', async () => {
+  const { readdir } = await import('node:fs/promises');
+  const dir = new URL('../src/rules/', import.meta.url);
+  const names = (await readdir(dir)).filter((n) => n.endsWith('.js') && n !== 'index.js' && !n.startsWith('_'));
+  assert.ok(names.length > 0, 'no rule files found');
+  for (const name of names) {
+    const rule = (await import(new URL(name, dir))).default;
+    assert.equal(
+      rule.id,
+      name.replace(/\.js$/, ''),
+      `src/rules/${name} exports id "${rule.id}": the file has to be named ${rule.id}.js`,
+    );
+  }
+});
+
 test('template rule passes the rule contract', () => {
   assert.equal(typeof template.id, 'string');
   assert.equal(typeof template.title, 'string');
