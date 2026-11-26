@@ -61,6 +61,26 @@ test('cli --ignore drops a rule', async () => {
   assert.equal(await main([dir, '--ignore', 'secret-in-client'], io(dir).io), 0);
 });
 
+// A typo in --ignore is silent today: the id matches nothing, the run looks like the rule passed,
+// and the user keeps a check they meant to switch off (#19).
+test('cli --ignore warns about an unknown id, suggests the closest one, and still scans', async () => {
+  const dir = fixtureDir('secret-in-client', 'bad');
+  const { out, io: x } = io(dir);
+  const code = await main([dir, '--ignore', 'secret-in-clien'], x);
+  assert.match(out.stderr, /secret-in-clien/);
+  assert.match(out.stderr, /secret-in-client/, 'the warning names the id it probably meant');
+  // The scan still ran and still failed on the rule that was not actually ignored.
+  assert.equal(code, 1);
+  assert.match(out.stdout, /preflight/i);
+});
+
+test('cli --ignore stays quiet for ids that exist', async () => {
+  const dir = fixtureDir('secret-in-client', 'bad');
+  const { out, io: x } = io(dir);
+  await main([dir, '--ignore', 'secret-in-client'], x);
+  assert.equal(out.stderr, '');
+});
+
 test('cli --version and --help', async () => {
   const v = io(empty());
   assert.equal(await main(['--version'], v.io), 0);

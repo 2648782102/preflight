@@ -18,6 +18,10 @@ export async function run(root, opts = {}) {
   const project = await loadProject(root);
   const rules = opts.rules ?? (await loadRules());
   const ignore = new Set(opts.ignore ?? []);
+  // An id that matches no rule is almost always a typo, and today it silently ignores nothing (#19).
+  // Reported rather than thrown: the rest of the scan is still useful.
+  const known = new Set(rules.map((r) => r.id));
+  const unknownIgnore = [...ignore].filter((id) => !known.has(id));
   const results = [];
   for (const rule of rules) {
     if (ignore.has(rule.id)) continue;
@@ -26,5 +30,12 @@ export async function run(root, opts = {}) {
       results.push({ ruleId: rule.id, title: rule.title, category: rule.category, severity: rule.severity, ...finding });
     }
   }
-  return { root, results, ...score(results), rulesRun: rules.length, filesScanned: project.files.length };
+  return {
+    root,
+    results,
+    ...score(results),
+    rulesRun: rules.length,
+    filesScanned: project.files.length,
+    ...(unknownIgnore.length ? { unknownIgnore } : {}),
+  };
 }
