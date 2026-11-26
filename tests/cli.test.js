@@ -115,3 +115,14 @@ test('cli --html accepts a name ending in .htm as well as .html', async () => {
     rmSync(written, { force: true });
   }
 });
+
+// Writing the report into a folder that does not exist threw a raw ENOENT stack trace (#17).
+test('cli --html into a missing folder says so and exits 2', async () => {
+  const dir = fixtureDir('secret-in-client', 'bad');
+  const { out, io: x } = io(dir);
+  const code = await main([dir, '--json', '--html', 'nodir/report.html'], x);
+  assert.equal(code, 2);
+  assert.match(out.stderr, /nodir\/report\.html/);
+  assert.match(out.stderr, /folder does not exist/i);
+  assert.doesNotMatch(out.stderr, /ENOENT|at Object\.<anonymous>|node:internal/);
+});

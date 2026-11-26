@@ -129,6 +129,16 @@ export async function main(argv, io) {
   // A --demo run copied the sample app into a temp folder; it is this run's to remove, and a throw
   // in rendering or --html must not leave it behind (#25).
   try {
+    // Checked before anything is printed: a report card that cannot be written is a usage error, and
+    // printing the whole report first then crashing with ENOENT buries the reason (#17).
+    if (values.html) {
+      const file = path.resolve(io.cwd, values.html);
+      if (!existsSync(path.dirname(file))) {
+        io.stderr.write(`Can't write ${values.html}: folder does not exist (${path.dirname(file)})\n`);
+        return 2;
+      }
+    }
+
     if (values.demo && !values.json) io.stdout.write('Scanning the Preflight demo app (deliberately broken, every secret is fake)...\n\n');
     if (values.json) io.stdout.write(JSON.stringify(report, null, 2) + '\n');
     else io.stdout.write(renderTerminal(report));
