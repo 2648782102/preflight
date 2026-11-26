@@ -10,6 +10,7 @@ Every check lives in `src/rules/<id>.js`. Want one that isn't here? [Add it](../
 | `stripe-webhook-unverified` | Security | critical | A Stripe webhook handler that never verifies the signature with `constructEvent` |
 | `cors-wildcard` | Security | warning | `cors()` with no options, or `Access-Control-Allow-Origin: *` |
 | `next-public-secret` | Security | critical | A `NEXT_PUBLIC_*` variable whose name says secret (`*SECRET*`, `*SERVICE_ROLE*`, `*PRIVATE*`), so its value ships to the browser |
+| `vite-env-secret-prefix` | Security | critical | A `VITE_*`, `EXPO_PUBLIC_*` or `REACT_APP_*` name that says secret, so its value ships to the browser |
 | `no-error-monitoring` | Reliability | info | A JavaScript app with no Sentry, PostHog, Bugsnag, Rollbar or LogRocket |
 | `no-privacy-policy` | Launch basics | warning | An app that signs users up or collects emails but has no privacy page |
 | `missing-meta-tags` | Launch basics | warning | An `index.html` or Next.js root layout without a title, description or share image |
