@@ -58,13 +58,12 @@ test('contributor docs and templates exist', () => {
   assert.ok((seeds.match(/^## /gm) ?? []).length >= 15, 'at least 15 seed issues');
 });
 
-
 test("every rule's id matches its file name", async () => {
-    const dir = new URL('../src/rules/', import.meta.url);
-    const names = (await readdir(dir)).filter((n) => n.endsWith('.js') && n !== 'index.js' && !n.startsWith('_'));
-    assert.ok(names.length > 0, 'expected at least one rule file in src/rules/');
-    for (const name of names) {
-          const rule = (await import(new URL(name, dir))).default;
-          assert.equal(rule.id, name.slice(0, -3), name);
-    }
+  const dir = new URL('../src/rules/', import.meta.url);
+  const names = (await readdir(dir)).filter((n) => n.endsWith('.js') && n !== 'index.js' && !n.startsWith('_'));
+  assert.ok(names.length > 0, 'expected at least one rule file in src/rules/');
+  for (const name of names) {
+  const rule = (await import(new URL(name, dir))).default;
+  assert.equal(rule.id, name.slice(0, -3), name);
+  }
 });
