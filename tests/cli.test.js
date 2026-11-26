@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, existsSync, readFileSync } from 'node:fs';
+import { mkdtempSync, existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { main } from '../src/cli.js';
@@ -81,6 +81,17 @@ test('cli --ignore stays quiet for ids that exist', async () => {
   assert.equal(out.stderr, '');
 });
 
+// Each --demo run copied the sample app into a new temp folder and left it there (#25): three runs
+// left three folders, and they accumulated in the OS temp dir for the life of the machine.
+test('cli --demo removes the folder it copied the sample app into', async () => {
+  const before = new Set(readdirSync(tmpdir()));
+  assert.equal(await main(['--demo', '--fail-on', 'never'], io(empty()).io), 0);
+  const created = readdirSync(tmpdir()).filter(
+    (name) => name.startsWith('preflight-demo-') && !before.has(name),
+  );
+  assert.deepEqual(created, [], `the run left ${created.join(', ')} behind`);
+});
+
 test('cli --version and --help', async () => {
   const v = io(empty());
   assert.equal(await main(['--version'], v.io), 0);
@@ -88,6 +99,21 @@ test('cli --version and --help', async () => {
   const h = io(empty());
   assert.equal(await main(['--help'], h.io), 0);
   assert.match(h.out.stdout, /--fail-on/);
+});
+
+// `--html report.htm` was read as the folder to scan, so the run failed with "Folder not found"
+// pointing at a file name (#18). The normaliser only recognised `.html`.
+test('cli --html accepts a name ending in .htm as well as .html', async () => {
+  const dir = fixtureDir('secret-in-client', 'bad');
+  for (const name of ['report.htm', 'report.html']) {
+    const { out, io: x } = io(dir);
+    await main([dir, '--json', '--html', name], x);
+    const written = path.join(dir, name);
+    assert.ok(existsSync(written), `--html ${name} wrote nothing`);
+    assert.match(readFileSync(written, 'utf8').toLowerCase(), /^<!doctype html/);
+    assert.doesNotMatch(out.stderr, /Folder not found/);
+    rmSync(written, { force: true });
+  }
 });
 
 // Writing the report into a folder that does not exist threw a raw ENOENT stack trace (#17).

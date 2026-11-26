@@ -117,3 +117,42 @@ test('no-privacy-policy still recognises an email input inside a long tag', () =
   assert.equal(findings.length, 1);
   assert.equal(findings[0].file, 'app/page.tsx');
 });
+
+// The check asked whether any file path contains "privacy", so an iOS privacy manifest silenced it
+// while a linked policy page did not count (#20).
+test('no-privacy-policy counts a linked policy URL and ignores an xcprivacy manifest', () => {
+  const signUp = 'supabase.auth.signUp({ email, password });';
+  const link = '<a href="https://example.com/privacy-policy">Privacy</a>';
+
+  const linked = {
+    has: () => false,
+    files: ['app/page.tsx'],
+    read: () => `${signUp}\n${link}`,
+  };
+  assert.deepEqual(privacy.check(linked), [], 'a linked policy is a policy');
+
+  const manifestOnly = {
+    has: () => true,
+    files: ['ios/PrivacyInfo.xcprivacy', 'app/page.tsx'],
+    read: () => signUp,
+  };
+  const found = privacy.check(manifestOnly);
+  assert.equal(found.length, 1, 'a privacy manifest is not a policy');
+  assert.equal(found[0].file, 'app/page.tsx');
+
+  const localPage = {
+    has: () => true,
+    files: ['app/privacy/page.tsx', 'app/page.tsx'],
+    read: () => signUp,
+  };
+  assert.deepEqual(privacy.check(localPage), [], 'a local /privacy page still counts');
+});
+
+test('no-privacy-policy: the new fixtures behave as the rule says', async () => {
+  const linked = await fixtureProject('no-privacy-policy', 'good-linked-policy');
+  assert.deepEqual(privacy.check(linked), [], 'a linked policy URL counts');
+
+  const manifest = await fixtureProject('no-privacy-policy', 'bad-apple-manifest');
+  const found = privacy.check(manifest);
+  assert.equal(found.length, 1, 'an xcprivacy manifest alone does not silence the check');
+});
