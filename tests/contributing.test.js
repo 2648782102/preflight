@@ -36,6 +36,12 @@ test('every rule flags its bad fixture with a fix, and passes its good fixture',
   }
 });
 
+test('every check title is short enough for the report card', async () => {
+  for (const rule of await loadRules()) {
+    assert.ok(rule.title.length <= 60, `${rule.id}: title is ${rule.title.length} characters`);
+  }
+});
+
 test('every finding fix ends with a full stop', async () => {
   for (const rule of await loadRules()) {
     const bad = rule.check(await fixtureProject(rule.id, 'bad'));
