@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, existsSync, readFileSync } from 'node:fs';
+import { mkdtempSync, existsSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { main } from '../src/cli.js';
@@ -59,6 +59,17 @@ test('cli --html writes the file', async () => {
 test('cli --ignore drops a rule', async () => {
   const dir = fixtureDir('secret-in-client', 'bad');
   assert.equal(await main([dir, '--ignore', 'secret-in-client'], io(dir).io), 0);
+});
+
+// Each --demo run copied the sample app into a new temp folder and left it there (#25): three runs
+// left three folders, and they accumulated in the OS temp dir for the life of the machine.
+test('cli --demo removes the folder it copied the sample app into', async () => {
+  const before = new Set(readdirSync(tmpdir()));
+  assert.equal(await main(['--demo', '--fail-on', 'never'], io(empty()).io), 0);
+  const created = readdirSync(tmpdir()).filter(
+    (name) => name.startsWith('preflight-demo-') && !before.has(name),
+  );
+  assert.deepEqual(created, [], `the run left ${created.join(', ')} behind`);
 });
 
 test('cli --version and --help', async () => {
