@@ -1,0 +1,8 @@
+# Preflight has no npm dependencies, but the CI workflow pins actions/checkout and
+# actions/setup-node, which get new major versions. This opens a pull request when one does.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
