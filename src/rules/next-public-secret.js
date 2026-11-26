@@ -8,6 +8,11 @@ const PUBLIC_NAME = /\bNEXT_PUBLIC_[A-Z0-9_]*/g;
  * browser, and flagging them would teach people to ignore this check.
  */
 const SECRET_WORD = /SECRET|SERVICE_ROLE|PRIVATE|PASSWORD|PASSWD|ACCESS_TOKEN|API_KEY/i;
+/**
+ * Providers whose browser key is public by design: Firebase's web API key, Google Maps and Mapbox
+ * tokens are restricted by domain, not kept secret, so `NEXT_PUBLIC_FIREBASE_API_KEY` is correct.
+ */
+const PUBLIC_BY_DESIGN = /FIREBASE|GOOGLE_MAPS|MAPS_API|MAPBOX|ALGOLIA_SEARCH|RECAPTCHA_SITE|POSTHOG|SENTRY_DSN/i;
 /** Reading the value at runtime is not a leak of a literal; the name is still what matters. */
 const ASSIGNMENT = /^\s*(?:export\s+)?(NEXT_PUBLIC_[A-Za-z0-9_]*)\s*=/;
 const REFERENCE = /\bNEXT_PUBLIC_[A-Za-z0-9_]*\b/g;
@@ -37,7 +42,8 @@ export default {
       if (!isEnv && !CODE.test(file)) continue;
       const names = isEnv ? namesInEnv(project.read(file)) : namesInCode(project.read(file));
       for (const name of new Set(names)) {
-        if (!SECRET_WORD.test(name.slice('NEXT_PUBLIC_'.length))) continue;
+        const rest = name.slice('NEXT_PUBLIC_'.length);
+        if (!SECRET_WORD.test(rest) || PUBLIC_BY_DESIGN.test(rest)) continue;
         findings.push({
           file,
           message: `${name} is prefixed NEXT_PUBLIC_, so its value is inlined into the browser bundle, but its name says it is a secret.`,
