@@ -83,3 +83,37 @@ test('missing-robots-txt is quiet with public/robots.txt, Next.js app/robots.ts,
   assert.deepEqual(robots.check(await fixtureProject('missing-robots-txt', 'good-next')), []);
   assert.deepEqual(robots.check(await fixtureProject('missing-robots-txt', 'good-backend')), []);
 });
+
+// The `[^>]+` in COLLECTS_DATA backtracks over every `<input ` run that has no closing `>`, so a
+// file full of them costs time quadratic in its length (#23): 20,000 copies took over 1.5 s here,
+// and a 120,000-copy file took over a minute. The bound makes the scan linear.
+test('no-privacy-policy scans a pathological file of unclosed input tags quickly', () => {
+  const pathological = '<input '.repeat(120_000);
+  const project = {
+    has: () => false,
+    files: ['app/page.tsx'],
+    read: () => pathological,
+  };
+  const started = performance.now();
+  const findings = privacy.check(project);
+  const elapsed = performance.now() - started;
+  assert.ok(
+    elapsed < 1000,
+    `took ${Math.round(elapsed)} ms on 120,000 unclosed tags; the pattern is backtracking`,
+  );
+  // It still finds nothing, because no tag reaches type="email".
+  assert.deepEqual(findings, []);
+});
+
+test('no-privacy-policy still recognises an email input inside a long tag', () => {
+  // A real tag can carry many attributes; the bound has to be generous enough for that.
+  const attributes = Array.from({ length: 40 }, (_, i) => `data-a${i}="v"`).join(' ');
+  const markup = `<input ${attributes} type="email" name="email">`;
+  const findings = privacy.check({
+    has: () => false,
+    files: ['app/page.tsx'],
+    read: () => markup,
+  });
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].file, 'app/page.tsx');
+});

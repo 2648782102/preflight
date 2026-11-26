@@ -1,5 +1,5 @@
 const CODE = /\.(?:js|jsx|mjs|ts|tsx|vue|svelte|html|astro|dart|swift|kt|py)$/;
-const COLLECTS_DATA = /supabase\.auth\.|\bsignUp\(|createUserWithEmailAndPassword|signInWithPassword|<input[^>]+type=["']email|next-auth|@clerk\/|@auth0\/|firebase\/auth|useSignUp\(/;
+const COLLECTS_DATA = /supabase\.auth\.|\bsignUp\(|createUserWithEmailAndPassword|signInWithPassword|<input[^>]{0,1000}type=["']email|next-auth|@clerk\/|@auth0\/|firebase\/auth|useSignUp\(/;
 const PRIVACY = /privacy/i;
 
 export default {

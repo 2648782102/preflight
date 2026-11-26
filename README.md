@@ -12,6 +12,7 @@ Preflight scans your project for leaked keys, open databases, unverified payment
 [![npm version](https://img.shields.io/npm/v/vibe-preflight)](https://www.npmjs.com/package/vibe-preflight)
 [![npm downloads](https://img.shields.io/npm/dm/vibe-preflight)](https://www.npmjs.com/package/vibe-preflight)
 [![CI](https://github.com/erdellll/preflight/actions/workflows/ci.yml/badge.svg)](https://github.com/erdellll/preflight/actions/workflows/ci.yml)
+**English** · [हिन्दी](docs/README.hi.md)
 
 ![Preflight report card](docs/assets/report-card.png)
 
@@ -51,7 +52,7 @@ Scans a deliberately broken demo app (every secret is fake) so you can see what 
 ```bash
 npx vibe-preflight [path]          # scan a folder (default: current folder)
 npx vibe-preflight --html          # also write a shareable preflight-report.html
-npx vibe-preflight --json          # machine-readable output
+npx vibe-preflight --json          # machine-readable output ([JSON format](docs/json.md))
 npx vibe-preflight --ignore a,b    # skip checks by id
 npx vibe-preflight --fail-on warning   # exit code policy: critical (default) | warning | never
 ```
