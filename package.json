@@ -15,8 +15,8 @@
     "commands"
   ],
   "scripts": {
-  "test": "node --test",
-  "demo": "node bin/preflight.js --demo --fail-on never"
+    "test": "node --test",
+    "demo": "node bin/preflight.js --demo --fail-on never"
   },
   "engines": {
     "node": ">=20"
