@@ -63,7 +63,7 @@ test("every rule's id matches its file name", async () => {
   const names = (await readdir(dir)).filter((n) => n.endsWith('.js') && n !== 'index.js' && !n.startsWith('_'));
   assert.ok(names.length > 0, 'expected at least one rule file in src/rules/');
   for (const name of names) {
-  const rule = (await import(new URL(name, dir))).default;
-  assert.equal(rule.id, name.slice(0, -3), name);
+    const rule = (await import(new URL(name, dir))).default;
+    assert.equal(rule.id, name.slice(0, -3), name);
   }
 });
