@@ -156,3 +156,28 @@ test('no-privacy-policy: the new fixtures behave as the rule says', async () => 
   const found = privacy.check(manifest);
   assert.equal(found.length, 1, 'an xcprivacy manifest alone does not silence the check');
 });
+
+// Supabase's own edge-function template sets Access-Control-Allow-Origin: '*', so every function
+// in supabase/functions/ was flagged with advice that does not fit that template (#22).
+test('cors-wildcard names corsHeaders for a Supabase edge function, and keeps the finding', () => {
+  const supabase = {
+    has: () => false,
+    files: ['supabase/functions/hello/index.ts'],
+    lines: () => ["export const corsHeaders = { 'Access-Control-Allow-Origin': '*', };"],
+    read: () => '',
+  };
+  const found = cors.check(supabase);
+  assert.equal(found.length, 1, 'the finding stays');
+  assert.match(found[0].fix, /corsHeaders/);
+  assert.match(found[0].fix, /origin/i);
+
+  const elsewhere = {
+    has: () => false,
+    files: ['src/server.ts'],
+    lines: () => ["app.use(cors({ origin: '*' }));"],
+    read: () => '',
+  };
+  const generic = cors.check(elsewhere);
+  assert.equal(generic.length, 1);
+  assert.doesNotMatch(generic[0].fix, /corsHeaders/, 'the generic advice stays generic');
+});
