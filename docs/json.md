@@ -26,7 +26,7 @@ The JSON report contains the following top-level fields:
 | `score` | Overall project score from 0 to 100 |
 | `grade` | Project grade from A to F |
 | `counts` | Number of critical, warning and info findings |
-| `byCategory` | Findings grouped by category |
+| `byCategory` | Number of findings in each category (`security`, `reliability`, `launch`) |
 | `results` | Individual findings detected during the scan |
 | `rulesRun` | Number of checks executed |
 | `filesScanned` | Number of project files scanned |

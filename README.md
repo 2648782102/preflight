@@ -12,6 +12,7 @@ Preflight scans your project for leaked keys, open databases, unverified payment
 [![npm version](https://img.shields.io/npm/v/vibe-preflight)](https://www.npmjs.com/package/vibe-preflight)
 [![npm downloads](https://img.shields.io/npm/dm/vibe-preflight)](https://www.npmjs.com/package/vibe-preflight)
 [![CI](https://github.com/erdellll/preflight/actions/workflows/ci.yml/badge.svg)](https://github.com/erdellll/preflight/actions/workflows/ci.yml)
+
 **English** · [हिन्दी](docs/README.hi.md)
 
 ![Preflight report card](docs/assets/report-card.png)
@@ -106,6 +107,10 @@ Use `// preflight-ignore <check-id>` on the affected line or `--ignore <check-id
 **Which stacks does it understand?**
 
 Preflight can scan any project's files, but its checks work best with Next.js, Vite, Supabase, Stripe, Express and plain HTML.
+
+**Why is a symlinked file not checked?**
+
+Symbolic links are skipped on purpose, both files and folders. Following them can loop — a folder linked into itself never ends — and can read files outside the project you asked Preflight to scan. A `.env` that is a symlink to a file elsewhere is therefore not reported; copy it in, or point the check at the folder that really holds it. The comment on `walk` in `src/project.js` says the same thing next to the code.
 
 ## License
 
