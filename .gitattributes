@@ -1,0 +1,6 @@
+# Store text with LF whatever the contributor's platform, as .editorconfig's end_of_line = lf asks:
+# a Windows checkout that rewrote a file to CRLF would otherwise show up as a whole-file diff.
+* text=auto eol=lf
+# Fixtures and the report card are read byte for byte (the walker and favicon checks), never edited.
+*.png binary
+*.ico binary
